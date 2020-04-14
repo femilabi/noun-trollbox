@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>National Open University Of Nigeria</title>
+<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+<!------ Include the above in your HEAD tag ---------->
+<style>
+    .panel{
+    width: 500px;
+    border: 1px #A0A0A0 solid;
+}
+
+.icon{
+    height: 70px;
+    padding-top:23px;
+    
+}
+#contact{
+    width: 50px;
+    height: 50px;
+    margin:auto;
+    padding:7px 8px 7px 8px;
+    background-color :#A4A4A4;
+    border-radius: 25px 25px 25px 25px;
+}
+
+.glyphicon-info-sign, .glyphicon-chevron-left{
+    font-size: 25px;
+    color: #37A7FD;
+}
+.glyphicon-user{
+    font-size: 35px;
+    color: #FFFFFF;
+}
+
+.panel-body{
+ height :350px;   
+ overflow-y: scroll;
+}
+
+.info{
+    color: #A4A4A4;
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.bold{
+    font-weight: bold;
+}
+
+
+.message{
+    font-size: 1.2em;
+    width: auto;
+    max-width:300px;
+    border-radius: 15px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+.message-in {
+    background-color: #E5E5EA;
+    margin-left: 20px;
+
+}
+.message-out{
+    background-color : #22D351;
+    margin-right: 20px;
+    color: #FFFFFF;
+}
+
+.glyphicon-send, .glyphicon-camera{
+    color: #848484;
+}
+</style>
+</head>
+<body>
+    
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">
+                    
+            <div class="panel panel-default">
+                <div class="panel-heading text-center">
+                    <div class="row">
+                        <div class="col-md-2">
+                            <div class="icon"><span class="glyphicon glyphicon-chevron-left"></span></div>
+                        </div>
+                        <div class="col-md-offset-3 col-md-2">
+                            <div id="contact"><span class="glyphicon glyphicon-user" aria-hidden="true"></span></div>
+                            NOUN TROLL BOX
+                        </div>
+                        <div class="col-md-offset-3 col-md-2">
+                            <div class="icon"><span class="glyphicon glyphicon-info-sign"></span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <!-- <div class="info">
+                        <span class="bold">Today</span> 11:54
+                    </div>
+                    <div class="row">
+                        <div class="message message-in pull-left">
+                            <b>femi:</b></br>
+                            Hey! What's up?
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="message message-out pull-right">
+                            Good! And you?
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="message message-in pull-left">
+                            Great! 
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="message message-out pull-right">
+                            Still ok to go to the cinema ?
+                        </div>
+                    </div> -->
+                </div>
+                <div class="panel-footer">
+                    <!-- <form> -->
+                        <div class="input-group">
+                            <span class="input-group-btn">
+                                <button data-toggle="modal" href="#modal-username" class="btn btn-default" type="button"><span class="glyphicon glyphicon-camera"></span></button>
+                            </span>
+                            <input id="message-text" type="text" class="form-control" placeholder="Message">
+                            <span class="input-group-btn">
+                                <button id="envoi" class="btn sendMsg btn-default" type="button"><span class="glyphicon glyphicon-send"></span></button>
+                            </span>
+                        </div>
+                    <!-- </form> -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="modal-username">
+      <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">x</button>
+                <h4 class="modal-title">Change Your Username</h4>
+            </div>
+            <div class="modal-body">
+                <!-- <input type="file" name ="username" id="username" accept="image/*"> -->
+                <input type="text" class="form-control" id="username">
+            </div>
+            <div class="modal-footer">
+                <button id="usernameBtn" class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+      </div>
+    </div>
+    
+</div>
+<script>
+    var io = io.connect();
+    io.on("connect", () => {
+        $("#modal-username").modal();
+        $("#username").val(io.id);
+    });
+
+    io.on("message", (data) => {
+        console.log(data, io.id);
+        let message = `
+            <div class="row">
+                <div class="message ` + (data.user_id == io.id ? "message-out pull-right" : "message-in pull-left") + `">
+                    <b style="color: black">` + (data.user_id == io.id ? "You" : (data.username ? data.username: data.user_id)) + `:</b></br>
+                    ` + data.message + `
+                </div>
+            </div>
+        `;
+        $(".panel-body").append(message);
+        var height = 0;
+        $('.panel-body div').each(function(i, value){
+            height += parseInt($(this).height());
+        });
+        $('.panel-body').animate({scrollTop: height});
+    });
+    io.on("user_left", (data) => {
+        let info = `
+            <div class="info">
+                <span class="bold">` + data.username + `</span> has left the room
+            </div>
+        `;
+        $(".panel-body").append(info);
+        var height = 0;
+        $('.panel-body div').each(function(i, value){
+            height += parseInt($(this).height());
+        });
+        $('.panel-body').animate({scrollTop: height});
+    });
+    io.on("user_joined", (data) => {
+        let info = `
+            <div class="info">
+                <span class="bold">` + data.username + `</span> has joined the room
+            </div>
+        `;
+        $(".panel-body").append(info);
+        var height = 0;
+        $('.panel-body div').each(function(i, value){
+            height += parseInt($(this).height());
+        });
+        $('.panel-body').animate({scrollTop: height});
+    });
+    io.on("username_changed", (data) => {
+        let info = `
+            <div class="info">
+                <span class="bold">` + io.id + `</span> has changed to <span class="bold">` + data.username + `</span>
+            </div>
+        `;
+        $(".panel-body").append(info);
+        var height = 0;
+        $('.panel-body div').each(function(i, value){
+            height += parseInt($(this).height());
+        });
+        $('.panel-body').animate({scrollTop: height});
+    });
+    io.on("typing", (data) => {
+        let info = `
+            <div class="info">
+                <span class="bold">` + data.username + `</span> is typing
+            </div>
+        `;
+        $(".panel-body").append(info);
+        var height = 0;
+        $('.panel-body div').each(function(i, value){
+            height += parseInt($(this).height());
+        });
+        $('.panel-body').animate({scrollTop: height});
+    });
+    $(".sendMsg").click(function (e) {
+        e.preventDefault();
+        let msg = $("#message-text").val();
+        if (msg.length) {
+            io.emit("message", msg);
+            $("#message-text").val("");
+        }
+    });
+    $("#message-text").keyup(function (e) {
+        e.preventDefault();
+        io.emit("typing");
+    });
+    $(".sendMsg").keydown(function (e) {
+        e.preventDefault();
+        io.emit("stop_typing");
+    });
+    $("#usernameBtn").click(function (e) {
+        e.preventDefault();
+        let username = $("#username").val();
+        io.emit("username", username);
+        $("#modal-username").modal("hide");
+    });
+</script>
+</body>
+</html>
